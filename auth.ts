@@ -19,6 +19,16 @@ async function getUser(username: string) {
     }
 }
 
+async function getUserById(id: string) {
+    try {
+        const result = await query('SELECT * FROM users WHERE id = $1', [id]);
+        return result.rows[0];
+    } catch (error) {
+        console.error('Failed to fetch user by id:', error);
+        return null;
+    }
+}
+
 export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,
     providers: [
@@ -49,6 +59,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                             name: user.full_name,
                             email: user.email,
                             role: user.role,
+                            image: user.image,
                         };
                     }
                 }
@@ -60,6 +71,47 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     ],
     callbacks: {
         ...authConfig.callbacks,
+        async jwt({ token, user, trigger, session }) {
+            // Initial sign in
+            if (user) {
+                // For Google login, user.id is Google ID, but we need DB UUID.
+                // Fetch user from DB by email to get real UUID.
+                if (user.email) {
+                    const dbUserRes = await query('SELECT * FROM users WHERE email = $1', [user.email]);
+                    const dbUser = dbUserRes.rows[0];
+                    if (dbUser) {
+                        token.sub = dbUser.id;
+                        token.role = dbUser.role;
+                        token.image = dbUser.image;
+                        token.name = dbUser.full_name;
+                        token.email = dbUser.email;
+                    }
+                }
+            }
+
+            // Subsequent requests: fetch fresh data from DB using the UUID we (hopefully) set above
+            if (token.sub) {
+                // Ensure token.sub is a valid UUID before querying to avoid "invalid input syntax" errors
+                // Simple regex check for UUID or try/catch inside getUserById handles it, 
+                // but getUserById already swallows errors, so it's safe-ish.
+                const existingUser = await getUserById(token.sub);
+                if (existingUser) {
+                    token.image = existingUser.image;
+                    token.role = existingUser.role;
+                    token.name = existingUser.full_name;
+                    token.email = existingUser.email;
+                }
+            }
+
+            // Allow manual update override if needed (though DB fetch above supersedes this mostly)
+            if (trigger === "update" && session) {
+                if (session?.user?.image) {
+                    token.image = session.user.image;
+                }
+            }
+
+            return token;
+        },
         async signIn({ user, account, profile }) {
             // Allow OAuth without email verification check (we verify it here)
             if (account?.provider === 'google') {
@@ -74,6 +126,10 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                         // If user exists but unverified, verify them (since Google is trusted)
                         if (!existingUser.email_verified) {
                             await query('UPDATE users SET email_verified = NOW() WHERE email = $1', [user.email]);
+                        }
+                        // Update image if missing in DB
+                        if (!existingUser.image && user.image) {
+                            await query('UPDATE users SET image = $1 WHERE email = $2', [user.image, user.email]);
                         }
                         return true;
                     }
@@ -91,9 +147,9 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                     }
 
                     await query(
-                        `INSERT INTO users (username, password, role, full_name, email, email_verified, created_at, updated_at)
-                         VALUES ($1, $2, $3, $4, $5, NOW(), NOW(), NOW())`,
-                        [username, hashedPassword, 'student', user.name, user.email]
+                        `INSERT INTO users (username, password, role, full_name, email, image, email_verified, created_at, updated_at)
+                         VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), NOW())`,
+                        [username, hashedPassword, 'student', user.name, user.email, user.image]
                     );
 
                     return true;

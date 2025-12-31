@@ -2,7 +2,7 @@ import type { NextAuthConfig } from 'next-auth';
 
 export const authConfig = {
     pages: {
-        signIn: '/login', // Trang login custom của bạn (nếu có)
+        signIn: '/login',
     },
     callbacks: {
         authorized({ auth, request: { nextUrl } }) {
@@ -30,17 +30,23 @@ export const authConfig = {
             if (token.role && session.user) {
                 session.user.role = token.role as "student" | "teacher";
             }
+            if (token.image && session.user) {
+                session.user.image = token.image as string;
+            }
             return session;
         },
         async jwt({ token, user, trigger, session }) {
             if (user) {
                 token.sub = user.id;
                 token.role = (user as any).role;
+                token.image = user.image || (user as any).picture;
             }
 
             // Support updating session manually
             if (trigger === "update" && session) {
-                token = { ...token, ...session };
+                if (session?.user?.image) {
+                    token.image = session.user.image;
+                }
             }
 
             return token;
