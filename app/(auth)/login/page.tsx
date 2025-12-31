@@ -57,58 +57,68 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex h-screen w-full items-center justify-center px-4">
-            <Card className="w-full max-w-sm">
-                <CardHeader>
-                    <CardTitle className="text-4xl font-bold text-center font-game text-primary">Đăng nhập</CardTitle>
-                    <CardDescription className="text-center font-game text-lg">
-                        Nhập thông tin đăng nhập của bạn để truy cập hệ thống
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                            <FormField
-                                control={form.control}
-                                name="username"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="font-game text-xl">Tên đăng nhập</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="hocsinh123" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="password"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="font-game text-xl">Mật khẩu</FormLabel>
-                                        <FormControl>
-                                            <Input type="password" placeholder="******" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <Button type="submit" className="w-full mt-6 font-game text-2xl py-6" disabled={isPending}>
-                                {isPending ? 'Đang xử lý...' : 'Đăng nhập'}
-                            </Button>
-                        </form>
-                    </Form>
-                </CardContent>
-                <CardFooter className="flex justify-center">
-                    <p className="text-base text-muted-foreground font-game">
-                        Chưa có tài khoản?{' '}
-                        <Link href="/register" className="text-primary hover:underline font-game">
-                            Đăng ký ngay
-                        </Link>
-                    </p>
-                </CardFooter>
-            </Card>
+        <div className="min-h-screen w-full lg:grid lg:grid-cols-2">
+
+            <div className="flex items-center justify-center py-10 px-4">
+                <Card className="w-full max-w-sm">
+                    <CardHeader>
+                        <CardTitle className="text-4xl font-bold text-center font-game text-primary">Đăng nhập</CardTitle>
+                        <CardDescription className="text-center font-game text-lg">
+                            Nhập thông tin đăng nhập của bạn để truy cập hệ thống
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                                <FormField
+                                    control={form.control}
+                                    name="username"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-game text-xl">Tên đăng nhập</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="hocsinh123" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="password"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-game text-xl">Mật khẩu</FormLabel>
+                                            <FormControl>
+                                                <Input type="password" placeholder="******" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <Button type="submit" className="w-full mt-6 font-game text-2xl py-6" disabled={isPending}>
+                                    {isPending ? 'Đang xử lý...' : 'Đăng nhập'}
+                                </Button>
+                            </form>
+                        </Form>
+                    </CardContent>
+                    <CardFooter className="flex justify-center">
+                        <p className="text-base text-muted-foreground font-game">
+                            Chưa có tài khoản?{' '}
+                            <Link href="/register" className="text-primary hover:underline font-game">
+                                Đăng ký ngay
+                            </Link>
+                        </p>
+                    </CardFooter>
+                </Card>
+            </div>
+            <div className="hidden lg:block relative h-full w-full">
+                <img
+                    src="/hero3.gif"
+                    alt="Hero"
+                    className="absolute inset-0 h-full w-full object-cover"
+                />
+            </div>
         </div>
     );
 }
