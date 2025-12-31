@@ -60,3 +60,13 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     expires_at TIMESTAMP NOT NULL,
     PRIMARY KEY (email, token)
 );
+
+-- Table: verification_tokens
+CREATE TABLE IF NOT EXISTS verification_tokens (
+    identifier VARCHAR(255) NOT NULL,
+    token VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    PRIMARY KEY (identifier, token)
+);
+
+-- Note: 'users' table needs: ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified TIMESTAMP;

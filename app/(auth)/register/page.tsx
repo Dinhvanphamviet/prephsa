@@ -38,6 +38,8 @@ export default function RegisterPage() {
         },
     });
 
+    const [successMessage, setSuccessMessage] = useState('');
+
     async function onSubmit(values: z.infer<typeof RegisterSchema>) {
         startTransition(async () => {
             try {
@@ -50,13 +52,14 @@ export default function RegisterPage() {
                 const data = await res.json();
 
                 if (res.ok) {
-                    toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
-                    router.push('/login');
+                    if (data.requireVerification) {
+                        setSuccessMessage('Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản.');
+                    } else {
+                        toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
+                        router.push('/login');
+                    }
                 } else {
-                    // Handle validation errors from API if any
                     if (data.errors) {
-                        // Manually set errors if fields match
-                        // For simplicity, we just toast the message
                         toast.error(data.message || 'Đăng ký thất bại');
                     } else {
                         toast.error(data.message || 'Đăng ký thất bại');
@@ -66,6 +69,35 @@ export default function RegisterPage() {
                 toast.error('Lỗi kết nối máy chủ');
             }
         });
+    }
+
+    if (successMessage) {
+        return (
+            <div className="min-h-screen w-full lg:grid lg:grid-cols-2">
+                <div className="hidden lg:block relative h-full w-full">
+                    <img
+                        src="/hero3.gif"
+                        alt="Hero"
+                        className="absolute inset-0 h-full w-full object-cover"
+                    />
+                </div>
+                <div className="flex items-center justify-center py-10 px-4">
+                    <Card className="w-full max-w-md">
+                        <CardHeader>
+                            <CardTitle className="text-3xl font-bold text-center font-game text-green-600">Kiểm tra Email</CardTitle>
+                            <CardDescription className="text-center font-game text-lg mt-4">
+                                {successMessage}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardFooter className="flex justify-center">
+                            <Button onClick={() => router.push('/login')} className="font-game">
+                                Quay lại đăng nhập
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </div>
+            </div>
+        );
     }
 
     return (

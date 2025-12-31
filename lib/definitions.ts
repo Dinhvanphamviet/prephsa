@@ -32,6 +32,7 @@ export type User = {
     role: 'student' | 'teacher';
     full_name?: string;
     email?: string;
+    email_verified?: Date;
     // ... other fields
 };
 

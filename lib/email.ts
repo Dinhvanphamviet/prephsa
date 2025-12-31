@@ -75,6 +75,10 @@ export async function sendPasswordResetEmail(email: string, token: string) {
                     
                     <p>Link này sẽ hết hạn sau 1 giờ.</p>
                     <p>Nếu bạn không yêu cầu hành động này, vui lòng bỏ qua email và tài khoản của bạn vẫn được bảo mật.</p>
+
+                    <div class="footer">
+                        <p>&copy; ${new Date().getFullYear()} Prep HSA. All rights reserved.</p>
+                    </div>
                 </div>
             </div>
         </body>
@@ -103,6 +107,82 @@ export async function sendPasswordResetEmail(email: string, token: string) {
         console.log(`Link: ${resetLink}`);
         console.log("========================================");
         // Return true so the API returns success to the frontend, allowing the user to proceed with the manual link
+        return true;
+    }
+}
+
+export async function sendVerificationEmail(email: string, token: string) {
+    const verifyLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
+
+    try {
+        const transporter = await getTransporter();
+
+        const info = await transporter.sendMail({
+            from: '"Prep HSA Support" <support@prephsa.com>',
+            to: email,
+            subject: 'Xác thực tài khoản của bạn',
+            html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0; }
+                .header { text-align: center; margin-bottom: 30px; }
+                .logo { font-size: 24px; font-weight: bold; color: #7c3aed; text-decoration: none; }
+                .content { margin-bottom: 30px; }
+                .button-container { text-align: center; margin: 30px 0; }
+                .button { display: inline-block; padding: 12px 24px; background-color: #7c3aed; color: #ffffff !important; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; transition: background-color 0.3s; }
+                .button:hover { background-color: #6d28d9; }
+                .footer { text-align: center; font-size: 12px; color: #64748b; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+                .link-fallback { word-break: break-all; color: #7c3aed; font-size: 14px; }
+            </style>
+        </head>
+        <body style="background-color: #f8fafc; padding: 40px 0;">
+            <div class="container">
+                <div class="header">
+                    <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}" class="logo">Prep HSA</a>
+                </div>
+                <div class="content">
+                    <h2 style="color: #1e293b; margin-top: 0;">Xác thực tài khoản</h2>
+                    <p>Xin chào,</p>
+                    <p>Cảm ơn bạn đã đăng ký tài khoản tại Prep HSA. Vui lòng xác thực email để hoàn tất quá trình đăng ký.</p>
+                    <p>Nhấn vào nút bên dưới để kích hoạt tài khoản:</p>
+                    
+                    <div class="button-container">
+                        <a href="${verifyLink}" class="button" target="_blank">Xác thực Email</a>
+                    </div>
+                    
+                    <p>Link này sẽ hết hạn sau 24 giờ.</p>
+                </div>
+                <div class="footer">
+                    <p>&copy; ${new Date().getFullYear()} Prep HSA. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+      `,
+        });
+
+        console.log("Verification email sent: %s", info.messageId);
+
+        const previewUrl = nodemailer.getTestMessageUrl(info);
+        if (previewUrl) {
+            console.log("========================================");
+            console.log("📧 VERIFY PREVIEW URL:", previewUrl);
+            console.log("========================================");
+        }
+
+        return true;
+    } catch (error) {
+        console.error("Error sending verification email:", error);
+        // Fallback
+        console.log("========================================");
+        console.log("FAILSAFE VERIFY LOG:");
+        console.log(`To: ${email}`);
+        console.log(`Link: ${verifyLink}`);
+        console.log("========================================");
         return true;
     }
 }

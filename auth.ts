@@ -31,6 +31,14 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
                     const passwordsMatch = await bcrypt.compare(password, user.password);
                     if (passwordsMatch) {
+                        // Check if email is verified
+                        if (!user.email_verified) {
+                            // throw new Error('EmailNotVerified'); // Custom error handling in middleware or page
+                            // For simple implementation, return null (generic error) or handle via authorize error
+                            console.log('Email not verified');
+                            return null;
+                        }
+
                         // Return user object for JWT callback
                         return {
                             id: user.id,
